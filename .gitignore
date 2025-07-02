@@ -1,0 +1,4 @@
+tb/script/*
+!tb/script/*.tcl
+UART_IP.pptx
+.vscode/
