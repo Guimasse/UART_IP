@@ -8,7 +8,14 @@ library ieee;
 Use ieee.std_logic_1164.all;
 Use ieee.numeric_std.all;
 
+use work.uart_pkg.all;
+
 entity uart_niosII is
+  generic(
+    ASYNC_RST         : boolean := false;
+    RST_VALUE         : std_logic := '0';
+    DEFAULT_BAUD_RATE : integer range 0 to 115200 := 9600
+  );
   port(
     CLK           : in  std_logic;
     RST           : in  std_logic;
@@ -39,32 +46,6 @@ architecture behavior of uart_niosII is
   constant ADDR_TX       : std_logic_vector(1 downto 0) := b"00";
   constant ADDR_RX       : std_logic_vector(1 downto 0) := b"01";
   constant ADDR_CONFIG   : std_logic_vector(1 downto 0) := b"10";
-
-  --------------------------
-  -- Component declaraton
-  --------------------------
-  Component uart is
-    port(
-      CLK           : in  std_logic;
-      RST           : in  std_logic;
-      
-      -- Slave AXI Stream (TX side)
-      S_TDATA       : in  std_logic_vector(7 downto 0);
-      S_TVALID      : in  std_logic;
-      S_TREADY      : OUT std_logic;
-      
-      -- Master AXI Stream (RX side)
-      M_TDATA       : out std_logic_vector(7 downto 0);
-      M_TVALID      : out std_logic;
-      M_TREADY      : in  std_logic;
-
-      -- UART communication
-      EXT_UART_TX   : out std_logic;
-      EXT_UART_RX   : in  std_logic;
-
-      IRQ           : out std_logic
-    );
-  end component;
   
   --------------------------
   -- Signal declaraton
@@ -81,6 +62,11 @@ begin
 
   -- instantiation of UART module
   inst_uart : uart
+    generic map(
+      SYNC_RST          => false,
+      RST_VALUE         => '0',
+      DEFAULT_BAUD_RATE => 9600
+    )
     port map(
       CLK        => CLK,  
       RST        => RST,
@@ -96,8 +82,8 @@ begin
       M_TREADY   => uart_rx_m_tready,
 
       -- UART communication
-      UART_TX    => EXT_UART_TX,
-      UART_RX    => EXT_UART_RX
+      EXT_UART_TX    => EXT_UART_TX,
+      EXT_UART_RX    => EXT_UART_RX
     );
   
   -- Process to manage TX
@@ -127,7 +113,6 @@ begin
       uart_rx_m_tready  <= '0';
       READDATA          <= (others => '0');
     else
-    -- elsif rising_edge(CLK) then
       if (READ = '1') then
         if (ADDRESS = ADDR_TX) then
           READDATA          <= x"000000" & uart_rx_m_tdata(7 downto 0);

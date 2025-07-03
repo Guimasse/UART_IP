@@ -9,7 +9,8 @@ Use ieee.numeric_std.all;
 
 entity uart_rx is
   generic(
-    RESET_VALUE       : std_logic := '0';
+    SYNC_RST          : boolean := false;
+    RST_VALUE         : std_logic := '0';
     DEFAULT_BAUD_RATE : integer range 0 to 115200 := 9600
   );
   port
@@ -31,7 +32,8 @@ architecture behavior of uart_rx is
 
   Component axi_stream_fifo is
     generic(
-      RESET_VALUE : std_logic := '0';
+      SYNC_RST    : boolean := false;
+      RST_VALUE   : std_logic := '0';
       FIFO_DEPTH  : integer := 256;
       ADDR_WIDTH  : integer := 8 -- log2(256) = 8
     );
@@ -67,12 +69,17 @@ architecture behavior of uart_rx is
   signal uart_cnt             : integer range 0 to 5208; -- maximum value of the counter if the baud rate is 9600
   signal max_value_uart_cnt   : integer range 0 to 5208;
   
-
   signal sampling_cnt         : integer range 0 to 2604;
 
 begin
 
   inst_axi_stream_fifo : axi_stream_fifo
+    generic map(
+      SYNC_RST      => SYNC_RST,
+      RST_VALUE     => RST_VALUE,
+      FIFO_DEPTH    => 256,
+      ADDR_WIDTH    => 8
+    )
     port map(
       CLK       => CLK,
       RST       => RST,
@@ -93,23 +100,34 @@ begin
   -- process of generating a UART tick to pace the reception
   P_RATE: process (CLK, RST)
   begin
-    if (RST = RESET_VALUE) then
+    
+    -- Async Reset
+    if (not SYNC_RST) and (RST = RST_VALUE) then
       uart_cnt   <= 0;
       uart_tick  <= '0';
       
     elsif rising_edge(CLK) then
-      -- If FSM is not in IDLE state
-      if start_rate = '1' then
-        if uart_cnt < max_value_uart_cnt then
-          uart_cnt  <= uart_cnt + 1;
-          uart_tick <= '0';
-        else
-          uart_tick <= '1';
-          uart_cnt  <= 0;
-        end if;
-      -- IDLE state
+
+      -- Sync Reset
+      if SYNC_RST and (RST = RST_VALUE) then
+        uart_cnt   <= 0;
+        uart_tick  <= '0';
+
       else
-        uart_cnt <= 0;
+        -- If FSM is not in IDLE state
+        if start_rate = '1' then
+          if uart_cnt < max_value_uart_cnt then
+            uart_cnt  <= uart_cnt + 1;
+            uart_tick <= '0';
+          else
+            uart_tick <= '1';
+            uart_cnt  <= 0;
+          end if;
+        -- IDLE state
+        else
+          uart_cnt <= 0;
+
+        end if;
       end if;
     end if;
   end process P_RATE;
@@ -119,8 +137,8 @@ begin
   P_RECEIVED: Process(CLK, RST)
   begin
   
-    -- Reset
-    if (RST = RESET_VALUE) then
+    -- Async Reset
+    if (not SYNC_RST) and (RST = RST_VALUE) then
       uart_state         <= IDLE;
       sampling_cnt       <=  0;
       receive_data_cnt   <=  0;
@@ -131,6 +149,19 @@ begin
       int_fifo_s_tdata   <= (others => '0');
       
     elsif rising_edge(CLK) then
+
+      -- Sync Reset
+      if SYNC_RST and (RST = RST_VALUE) then
+        uart_state         <= IDLE;
+        sampling_cnt       <=  0;
+        receive_data_cnt   <=  0;
+        uart_rx_reg        <= '0';
+        start_rate         <= '0';
+        int_fifo_s_tvalid  <= '0';
+        uart_data          <= (others => '0');
+        int_fifo_s_tdata   <= (others => '0');
+
+      else
 
         -- FSM for UART reception
         case uart_state is
@@ -175,9 +206,10 @@ begin
               sampling_cnt       <=  0;
               int_fifo_s_tdata   <= uart_data;
               int_fifo_s_tvalid  <= '1';
+
             end if;
-        
-        end case;
+          end case;
+        end if;
     end if;
   end Process P_RECEIVED;
   
