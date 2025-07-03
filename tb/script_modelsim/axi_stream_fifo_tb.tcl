@@ -101,9 +101,9 @@ proc auto_waves {} {
 proc c {} {
 	vlib work
 	vmap work work
-	vcom -2008 -work work ../../UART/tb/pkg/simu_pkg.vhd
-	vcom -2008 -work work ../../UART/tb/axi_stream_fifo_tb.vhd
-	vcom -2008 -work work ../../UART/src/axi_stream_fifo.vhd
+	vcom -2008 -work work tb/simu_pkg.vhd
+	vcom -2008 -work work tb/axi_stream_fifo_tb.vhd
+	vcom -2008 -work work src/axi_stream_fifo.vhd
 }
 
 ##############################################################################

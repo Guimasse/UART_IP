@@ -1,4 +1,11 @@
-tb/script/*
-!tb/script/*.tcl
-UART_IP.pptx
 .vscode/
+work/
+
+*.pptx
+*.ini
+*.wlf
+*.vstf
+wlf*
+transcript
+
+!tb/script/*.tcl

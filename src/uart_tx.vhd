@@ -4,12 +4,13 @@
 -- Description : UART frame sending block
 -- ==============================================================================================
 library ieee;
-Use ieee.std_logic_1164.all;
-Use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity uart_tx is
   generic(
-    RESET_VALUE       : std_logic := '0';
+    SYNC_RST          : boolean := false;
+    RST_VALUE         : std_logic := '0';
     DEFAULT_BAUD_RATE : integer range 0 to 115200 := 9600
   );
   port
@@ -31,9 +32,10 @@ architecture behavior of uart_tx is
 
   Component axi_stream_fifo is
     generic(
-      RESET_VALUE : std_logic := '0';
-      FIFO_DEPTH   : integer := 256;
-      ADDR_WIDTH   : integer := 8 -- log2(256) = 8
+      SYNC_RST      : boolean := false;
+      RST_VALUE     : std_logic := '0';
+      FIFO_DEPTH    : integer := 256;
+      ADDR_WIDTH    : integer := 8 -- log2(256) = 8
     );
     Port (
       CLK       : in  std_logic;
@@ -71,6 +73,12 @@ architecture behavior of uart_tx is
 begin
 
   inst_axi_stream_fifo : axi_stream_fifo
+    generic map(
+      SYNC_RST      => SYNC_RST,
+      RST_VALUE     => RST_VALUE,
+      FIFO_DEPTH    => 256,
+      ADDR_WIDTH    => 8
+    )
     port map(
       CLK       => CLK,
       RST       => RST,
@@ -91,25 +99,36 @@ begin
   -- Process of generating a UART tick to pace the sending
   P_RATE: process (CLK, RST)
   begin
-    if (RST = RESET_VALUE) then
+
+    -- Async Reset
+    if (not SYNC_RST) and (RST = RST_VALUE) then
       uart_cnt   <=  0;
       uart_tick  <= '0';
       
     elsif rising_edge(CLK) then
-      -- If FSM is not in IDLE state
-      if start_rate = '1' then
-        if uart_cnt  < max_value_uart_cnt then
-          uart_cnt   <= uart_cnt + 1;
-          uart_tick  <= '0';
-        else
-          uart_tick  <= '1';
-          uart_cnt   <=  0;
-        end if;
-      -- IDLE state
-      else
+
+      -- Sync Reset
+      if SYNC_RST and (RST = RST_VALUE) then
+        uart_cnt   <=  0;
         uart_tick  <= '0';
-        uart_cnt   <= 0;
+      else
+
+        -- If FSM is not in IDLE state
+        if start_rate = '1' then
+          if uart_cnt  < max_value_uart_cnt then
+            uart_cnt   <= uart_cnt + 1;
+            uart_tick  <= '0';
+          else
+            uart_tick  <= '1';
+            uart_cnt   <=  0;
+          end if;
+        -- IDLE state
+        else
+          uart_tick  <= '0';
+          uart_cnt   <= 0;
+        end if;
       end if;
+
     end if;
   end process P_RATE;
 
@@ -117,8 +136,8 @@ begin
   P_SEND: Process(CLK, RST)
   begin
   
-    -- Reset
-    if RST = RESET_VALUE then
+    -- Async Reset
+    if (not SYNC_RST) and (RST = RST_VALUE) then
       UART_TX            <= '1';
       uart_state         <= IDLE;
       start_rate         <= '0';
@@ -127,6 +146,15 @@ begin
       
     elsif rising_edge(CLK) then
     
+      -- Sync Reset
+      if SYNC_RST and (RST = RST_VALUE) then
+        UART_TX            <= '1';
+        uart_state         <= IDLE;
+        start_rate         <= '0';
+        int_fifo_m_tready  <= '1';
+        send_data_cnt      <=  0;
+
+      else
         -- FSM for UART sending
         case uart_state is
         
@@ -173,9 +201,8 @@ begin
             end if;
             
         end case;
-      
+
+      end if;
     end if;
-    
   end Process P_SEND;
-  
 end behavior;
