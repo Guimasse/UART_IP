@@ -23,19 +23,19 @@ architecture description of testbench is
   --------------------------
   -- Component declaraton
   --------------------------
-  component uart is
+  component uart_niosII is
     port(
-      CLK 			    : in  std_logic;
-      RST	 		      : in  std_logic;
+      CLK           : in  std_logic;
+      RST             : in  std_logic;
       
       -- Avalon Bus
-      CHIPSELECT 	  : in  std_logic;
-      ADDRESS 		  : in  std_logic_vector(1 downto 0);
-      WRITE 		    : in  std_logic;
-      WRITEDATA 	  : in  std_logic_vector(31 downto 0);
-      READ 			    : in  std_logic;
-      READDATA 	    : out std_logic_vector(31 downto 0);
-      WAITREQUEST	  : out std_logic;
+      CHIPSELECT     : in  std_logic;
+      ADDRESS       : in  std_logic_vector(1 downto 0);
+      WRITE         : in  std_logic;
+      WRITEDATA     : in  std_logic_vector(31 downto 0);
+      READ           : in  std_logic;
+      READDATA       : out std_logic_vector(31 downto 0);
+      WAITREQUEST    : out std_logic;
       
       -- External signals
       EXT_UART_TX   : out std_logic;
@@ -67,25 +67,26 @@ architecture description of testbench is
 
 begin
 
-  -- Instantiation of UART module
-  inst_uart : uart
+  -- Instantiation of UART_NIOSII module
+  inst_uart : uart_niosII
     port map (
-      CLK 			    => int_clk,
-      RST	 		      => int_rst,
+      CLK           => int_clk,
+      RST           => int_rst,
       
       -- Avalon Bus
-      CHIPSELECT 	  => int_chipselect,
-      ADDRESS 		  => int_address,
-      WRITE 		    => int_write,
-      WRITEDATA 	  => int_writedata,
-      READ 			    => int_read,
-      READDATA 	    => int_readdata,
-      WAITREQUEST	  => int_waitrequest,
+      CHIPSELECT    => int_chipselect,
+      ADDRESS       => int_address,
+      WRITE         => int_write,
+      WRITEDATA     => int_writedata,
+      READ          => int_read,
+      READDATA      => int_readdata,
+      WAITREQUEST   => int_waitrequest,
       
       -- External signals
       EXT_UART_TX   => int_ext_uart_tx,
       EXT_UART_RX   => int_ext_uart_tx,
 
+      -- Interruption
       IRQ           => int_irq
     );
 
