@@ -23,26 +23,27 @@ architecture description of testbench is
   -- Component declaraton
   --------------------------
 	component axi_stream_fifo is
-		generic(
-			RESET_VALUE : std_logic := '0';
-			FIFO_DEPTH 	: integer := 256;
-			ADDR_WIDTH 	: integer := 8 -- log2(256) = 8
-		);
-		Port (
-			CLK           : in  std_logic;
-			RST           : in  std_logic;
+    generic(
+      SYNC_RST      : boolean := false;
+      RST_VALUE     : std_logic := '0';
+      FIFO_DEPTH    : integer := 256;
+      ADDR_WIDTH    : integer := 8 -- log2(256) = 8
+    );
+    Port (
+      CLK       : in  std_logic;
+      RST       : in  std_logic;
 
-			-- AXI-Stream Slave Interface (input)
-			int_s_tdata   : in  std_logic_vector(7 downto 0);
-			int_s_tvalid  : in  std_logic;
-			int_s_tready  : out std_logic;
+      -- AXI-Stream Slave Interface (input)
+      S_TDATA   : in  std_logic_vector(7 downto 0);
+      S_TVALID  : in  std_logic;
+      S_TREADY  : out std_logic;
 
-			-- AXI-Stream Master Interface (output)
-			int_m_tdata   : out std_logic_vector(7 downto 0);
-			int_m_tvalid  : out std_logic;
-			int_m_tready  : in  std_logic
-		);
-	end component;
+      -- AXI-Stream Master Interface (output)
+      M_TDATA   : out std_logic_vector(7 downto 0);
+      M_TVALID  : out std_logic;
+      M_TREADY  : in  std_logic
+    );
+  end component;
 
   --------------------------
   -- Signal declaraton
@@ -64,15 +65,25 @@ begin
 
   -- instantiation of axi_stream_fifo
   inst_axi_stream_fifo: axi_stream_fifo
+    generic map (
+      SYNC_RST   => false,
+      RST_VALUE  => '0',
+      FIFO_DEPTH => 256,
+      ADDR_WIDTH => 8
+    )
     port map (
       CLK          => int_clk, 
       RST          => int_rst, 
-      int_s_tdata  => int_s_tdata, 
-      int_s_tvalid => int_s_tvalid, 
-      int_s_tready => int_s_tready,
-      int_m_tdata  => int_m_tdata, 
-      int_m_tvalid => int_m_tvalid, 
-      int_m_tready => int_m_tready
+
+      -- AXI-Stream Slave Interface (input)
+      S_TDATA      => int_s_tdata, 
+      S_TVALID     => int_s_tvalid, 
+      S_TREADY     => int_s_tready,
+
+      -- AXI-Stream Master Interface (output)
+      M_TDATA      => int_m_tdata, 
+      M_TVALID     => int_m_tvalid, 
+      M_TREADY     => int_m_tready
     );
 
   -- Process to manage clock
@@ -176,12 +187,12 @@ begin
       if int_m_tdata = random_byte then
           assert false
             report "Octet #" & integer'image(i) & " : x" & 
-              to_hex_string(int_m_tdata) & " | expected : x" & to_hex_string(random_byte) & """"
+              to_hstring(int_m_tdata) & " | expected : x" & to_hstring(random_byte) & """"
             severity note;
         else
           assert false
             report "Octet #" & integer'image(i) & " : x" & 
-              to_hex_string(int_m_tdata) & " | expected : x" & to_hex_string(random_byte) & """"
+              to_hstring(int_m_tdata) & " | expected : x" & to_hstring(random_byte) & """"
             severity error;
         end if;
     end loop;

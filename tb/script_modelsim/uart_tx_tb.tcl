@@ -99,21 +99,13 @@ proc auto_waves {} {
 # Launch hdl compilation
 #-----------------------------------------------------------------------------
 proc c {} {
-
 	vlib work
 	vmap work work
-
 	vcom -2008 -work work src/uart_pkg.vhd
-	vcom -2008 -work work tb/pkg/simu_pkg.vhd
-
-	vcom -2008 -work work tb/uart_niosII_tb.vhd
-	vcom -2008 -work work src/uart_niosII.vhd
-
-	vcom -2008 -work work src/uart.vhd
 	vcom -2008 -work work src/uart_tx.vhd
-	vcom -2008 -work work src/uart_rx.vhd
-
 	vcom -2008 -work work src/axi_stream_fifo.vhd
+	vcom -2008 -work work tb/simu_pkg.vhd
+	vcom -2008 -work work tb/uart_tx_tb.vhd
 }
 
 ##############################################################################

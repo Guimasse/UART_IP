@@ -1,6 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
-Use ieee.numeric_std.all;
+use ieee.numeric_std.all;
 
 package uart_pkg is
   --------------------------

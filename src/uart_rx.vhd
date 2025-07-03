@@ -4,8 +4,8 @@
 -- Description : UART frame receiver block
 -- ==============================================================================================
 library ieee;
-Use ieee.std_logic_1164.all;
-Use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity uart_rx is
   generic(

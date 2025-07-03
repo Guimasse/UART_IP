@@ -9,6 +9,7 @@ use ieee.numeric_std.all;
 use std.textio.all;
 
 use work.simu_pkg.all;
+use work.uart_pkg.uart_tx;
 
 entity testbench is
 end testbench;
@@ -21,42 +22,19 @@ architecture description of testbench is
   constant CLK_PERIOD : time := 20 ns; --50 MHz
 
   --------------------------
-  -- Component declaraton
-  --------------------------
-  component uart_tx is
-    generic(
-      RESET_VALUE     : std_logic := '0';
-      DEFAULT_BAUD_RATE   : integer range 0 to 115200 := 9600
-    );
-    port
-    (
-      CLK       : in  std_logic;
-      RST       : in  std_logic;
-
-            -- AXI-Stream bus
-      S_TDATA     : in  std_logic_vector(7 downto 0);
-      S_TVALID    : in  std_logic; -- input to start the process
-      S_TREADY    : out std_logic;
-
-            -- UART
-      UART_TX     : out std_logic
-    );
-  end component;
-
-  --------------------------
   -- Signal declaraton
   --------------------------
-  signal int_clk        : std_logic;
-  signal int_rst        : std_logic;
+  signal int_clk            : std_logic;
+  signal int_rst            : std_logic;
 
-  signal int_s_tdata    : std_logic_vector(7 downto 0);
-  signal int_s_tvalid   : std_logic;
-  signal int_s_tready   : std_logic;
+  signal int_s_tdata        : std_logic_vector(7 downto 0);
+  signal int_s_tvalid       : std_logic;
+  signal int_s_tready       : std_logic;
 
-  signal int_uart_tx    : std_logic;
+  signal int_uart_tx        : std_logic;
   signal int_uart_tx_reg    : std_logic;
 
-  signal stop_read      : std_logic;
+  signal stop_read          : std_logic;
 
 begin
 

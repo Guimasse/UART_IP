@@ -4,8 +4,8 @@
 -- Description : FIFO (First In, First Out) block operating with AXI-Stream bus
 -- ==============================================================================================
 library ieee;
-Use ieee.std_logic_1164.all;
-Use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity axi_stream_fifo is
   generic(

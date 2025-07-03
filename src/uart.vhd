@@ -5,8 +5,8 @@
 --               or receive from UART to AXIS bus
 -- ==============================================================================================
 library ieee;
-Use ieee.std_logic_1164.all;
-Use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 use work.uart_pkg.all;
 

@@ -99,14 +99,11 @@ proc auto_waves {} {
 # Launch hdl compilation
 #-----------------------------------------------------------------------------
 proc c {} {
-  set current_path [pwd]
-  set project_path $current_path/../..
-
 	vlib work
 	vmap work work
-	vcom -2008 -work work $project_path/tb/pkg/simu_pkg.vhd
-	vcom -2008 -work work $project_path/tb/axi_stream_fifo_tb.vhd
-	vcom -2008 -work work $project_path/src/axi_stream_fifo.vhd
+	vcom -2008 -work work tb/simu_pkg.vhd
+	vcom -2008 -work work tb/axi_stream_fifo_tb.vhd
+	vcom -2008 -work work src/axi_stream_fifo.vhd
 }
 
 ##############################################################################

@@ -70,23 +70,23 @@ proc add_group {inst_name} {
 # Populate waveform window
 #-----------------------------------------------------------------------------
 proc auto_waves {} {
-	# Scan instances in current directory and add all waves
-	inst_scan ""
+  # Scan instances in current directory and add all waves
+  inst_scan ""
 
-	# Wave display configuration
-	configure wave -namecolwidth 220
-	configure wave -valuecolwidth 100
-	configure wave -justifyvalue left
-	configure wave -signalnamewidth 1
-	configure wave -snapdistance 10
-	configure wave -datasetprefix 0
-	configure wave -rowmargin 4
-	configure wave -childrowmargin 2
-	configure wave -gridoffset 0
-	configure wave -gridperiod 1
-	configure wave -griddelta 40
-	configure wave -timeline 0
-	configure wave -timelineunits us
+  # Wave display configuration
+  configure wave -namecolwidth 220
+  configure wave -valuecolwidth 100
+  configure wave -justifyvalue left
+  configure wave -signalnamewidth 1
+  configure wave -snapdistance 10
+  configure wave -datasetprefix 0
+  configure wave -rowmargin 4
+  configure wave -childrowmargin 2
+  configure wave -gridoffset 0
+  configure wave -gridperiod 1
+  configure wave -griddelta 40
+  configure wave -timeline 0
+  configure wave -timelineunits us
 }
 
 ##############################################################################
@@ -99,12 +99,17 @@ proc auto_waves {} {
 # Launch hdl compilation
 #-----------------------------------------------------------------------------
 proc c {} {
-	vlib work
-	vmap work work
-	vcom -2008 -work work ../../UART/tb/pkg/simu_pkg.vhd
-	vcom -2008 -work work ../../UART/src/axi_stream_fifo.vhd
-	vcom -2008 -work work ../../UART/src/uart_rx.vhd
-	vcom -2008 -work work ../../UART/tb/uart_rx_tb.vhd
+  vlib work
+  vmap work work
+	vcom -2008 -work work src/uart_pkg.vhd
+  vcom -2008 -work work src/uart.vhd
+  vcom -2008 -work work src/uart_tx.vhd
+  vcom -2008 -work work src/uart_rx.vhd
+  vcom -2008 -work work src/axi_stream_fifo.vhd
+
+  vcom -2008 -work work tb/simu_pkg.vhd
+  vcom -2008 -work work tb/uart_niosII_tb.vhd
+  vcom -2008 -work work src/uart_niosII.vhd
 }
 
 ##############################################################################
@@ -119,16 +124,16 @@ proc c {} {
 # Launch simulation
 #-----------------------------------------------------------------------------
 proc s {} {
-	#vsim -gMY_GENERIC=255 -novopt -t 10ps work.testbench(behavioral)
-	vsim -novopt -t 10ps work.testbench(description) -assertdebug -msgmode both
-	auto_waves
-  log -r /*
-	run -all
+  #vsim -gMY_GENERIC=255 -novopt -t 10ps work.testbench(behavioral)
+  vsim -novopt -t 10ps work.testbench(description) -assertdebug -msgmode both
+  auto_waves
+  run -all
+  # run 10 ms
 }
 
 proc clean {} {
-	vmap -del work
-	vdel -all -lib work
+  vmap -del work
+  vdel -all -lib work
 }
 
 #-----------------------------------------------------------------------------
@@ -137,17 +142,17 @@ proc clean {} {
 # Launch compil & simulation
 #-----------------------------------------------------------------------------
 proc cs {} {
-	c
-	s
+  c
+  s
 }
 
 ##############################################################################
 ## [TO ADAPT] Replace "200 us" by the time span of the desired simulation.
 ##############################################################################
 proc rs {} {
-	restart
-	# TODO: Change time if needed
-	run 10 ms 
+  restart
+  # TODO: Change time if needed
+  run 30 ms 
 }
 
 #-----------------------------------------------------------------------------

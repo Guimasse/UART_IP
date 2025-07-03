@@ -9,6 +9,7 @@ use ieee.numeric_std.all;
 use std.textio.all;
 
 use work.simu_pkg.all;
+use work.uart_pkg.uart_rx;
 
 entity testbench is
 end testbench;
@@ -19,29 +20,6 @@ architecture description of testbench is
   -- Constant declaraton
   --------------------------
   constant CLK_PERIOD : time := 20 ns; --50 MHz
-
-  --------------------------
-  -- Component declaraton
-  --------------------------
-  component uart_rx is
-    generic(
-      RESET_VALUE       : std_logic := '0';
-      DEFAULT_BAUD_RATE : integer range 0 to 115200 := 9600
-    );
-    port
-    (
-      CLK       : in  std_logic;
-      RST       : in  std_logic;
-
-      -- AXI-Stream bus
-      M_TDATA   : out std_logic_vector(7 downto 0);
-      M_TVALID  : out std_logic;
-      M_TREADY  : in  std_logic;
-
-      -- UART
-      UART_RX   : in  std_logic
-    );
-  end component;
 
   --------------------------
   -- Signal declaraton

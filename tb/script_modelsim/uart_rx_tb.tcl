@@ -101,11 +101,11 @@ proc auto_waves {} {
 proc c {} {
 	vlib work
 	vmap work work
-	vcom -2008 -work work ../../UART/tb/pkg/simu_pkg.vhd
-	vcom -2008 -work work ../../UART/tb/uart_tx_avalon_tb.vhd
-	vcom -2008 -work work ../../UART/src/uart.vhd
-	vcom -2008 -work work ../../UART/src/uart_tx.vhd
-	vcom -2008 -work work ../../UART/src/axi_stream_fifo.vhd
+	vcom -2008 -work work src/uart_pkg.vhd
+	vcom -2008 -work work src/uart_rx.vhd
+	vcom -2008 -work work src/axi_stream_fifo.vhd
+	vcom -2008 -work work tb/simu_pkg.vhd
+	vcom -2008 -work work tb/uart_rx_tb.vhd
 }
 
 ##############################################################################
@@ -123,8 +123,8 @@ proc s {} {
 	#vsim -gMY_GENERIC=255 -novopt -t 10ps work.testbench(behavioral)
 	vsim -novopt -t 10ps work.testbench(description) -assertdebug -msgmode both
 	auto_waves
-  run -all
-	# run 10 ms
+  log -r /*
+	run -all
 }
 
 proc clean {} {
@@ -148,7 +148,7 @@ proc cs {} {
 proc rs {} {
 	restart
 	# TODO: Change time if needed
-	run 30 ms 
+	run 10 ms 
 }
 
 #-----------------------------------------------------------------------------
